@@ -34,12 +34,17 @@ public class LoginActivity extends AppCompatActivity {
     DatabaseReference reference;
     GoogleSignInClient client;
     SignInButton googleSignIn;
+    FirebaseUser currentUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initialise();
-
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if(currentUser != null){
+            startActivity(new Intent(LoginActivity.this,MainActivity.class));
+            finish();
+        }
         googleSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
