@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> leftOr = new ArrayList<>();
     GoogleSignInOptions gso;
     FirebaseAuth auth;
-    FastDialog fastDialog;
+    
     DatabaseReference reference;
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
