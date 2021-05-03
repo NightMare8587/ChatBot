@@ -27,6 +27,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Objects;
+
 public class LoginActivity extends AppCompatActivity {
     GoogleSignInOptions gso;
     GoogleSignInAccount account;
@@ -56,9 +58,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initialise() {
         auth = FirebaseAuth.getInstance();
-        reference = FirebaseDatabase.getInstance().getReference().getRoot();
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("302254302350-17j1dglgfiurcg6ca4q1r5sig9utrnum.apps.googleusercontent.com")
+                .requestIdToken("429532852022-4m2da2oqaaehm6kkfqlvmatg2ca5hfnt.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
         googleSignIn = findViewById(R.id.googleSignIn);
@@ -104,9 +105,12 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = auth.getCurrentUser();
                             assert user != null;
                             auth.updateCurrentUser(user);
-                            reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Users").child(user.getUid());
+
+                            Toast.makeText(LoginActivity.this, ""+auth.getUid(), Toast.LENGTH_SHORT).show();
                             GoogleSignInDB googleSignInDB = new GoogleSignInDB(account.getDisplayName(),account.getEmail());
-                            reference.setValue(googleSignInDB);
+                            reference = FirebaseDatabase.getInstance().getReference().getRoot();
+                            reference.child("Users").child(Objects.requireNonNull(auth.getUid())).setValue(googleSignInDB);
+
                             startActivity(new Intent(LoginActivity.this,MainActivity.class));
 //                            updateUI(user);
                         } else {
@@ -127,6 +131,7 @@ public class LoginActivity extends AppCompatActivity {
             String personEmail = acct.getEmail();
             String personId = acct.getId();
             Uri personPhoto = acct.getPhotoUrl();
+
             Log.i("info",personName+ " " + personEmail + " " + personFamilyName);
         }
     }
