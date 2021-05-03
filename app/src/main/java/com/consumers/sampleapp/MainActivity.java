@@ -37,12 +37,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import karpuzoglu.enes.com.fastdialog.Animations;
+import karpuzoglu.enes.com.fastdialog.FastDialog;
+import karpuzoglu.enes.com.fastdialog.FastDialogBuilder;
+import karpuzoglu.enes.com.fastdialog.Type;
+
 public class MainActivity extends AppCompatActivity {
     List<String> commands = new ArrayList<>();
     List<String> leftOr = new ArrayList<>();
     GoogleSignInOptions gso;
     FirebaseAuth auth;
-    
+    FastDialog fastDialog;
     DatabaseReference reference;
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
@@ -55,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initialise();
+        fastDialog = new FastDialogBuilder(MainActivity.this, Type.PROGRESS)
+                .progressText("Loading Previous Chat...")
+                .setAnimation(Animations.FADE_IN)
+                .create();
+        fastDialog.show();
         linearLayoutManager = new LinearLayoutManager(MainActivity.this);
         reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -63,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
                 if(snapshot.exists()){
                     commands.clear();
                     leftOr.clear();
+
                     for(DataSnapshot dataSnapshot : snapshot.getChildren()){
                         commands.add(dataSnapshot.child("message").getValue(String.class));
                         leftOr.add(dataSnapshot.child("sender").getValue(String.class));
@@ -70,7 +81,10 @@ public class MainActivity extends AppCompatActivity {
                     linearLayoutManager.setStackFromEnd(true);
                     recyclerView.setLayoutManager(linearLayoutManager);
                     recyclerView.setAdapter(new adapter(commands,leftOr));
-                }
+
+                    fastDialog.dismiss();
+                }else
+                    fastDialog.dismiss();
             }
 
             @Override
