@@ -5,11 +5,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,6 +28,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,13 +42,14 @@ public class MainActivity extends AppCompatActivity {
     List<String> leftOr = new ArrayList<>();
     GoogleSignInOptions gso;
     FirebaseAuth auth;
+    FastDialog fastDialog;
     DatabaseReference reference;
     RecyclerView recyclerView;
     LinearLayoutManager linearLayoutManager;
     EditText editText;
     Button button;
     GoogleSignInClient client;
-    String url = "http://jethiya-ai.herokuapp.com/api/";
+    String url = "https://jethiya-ai.herokuapp.com/api/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,14 +91,48 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 auth = FirebaseAuth.getInstance();
-
+                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
                 chat chat = new chat(editText.getText().toString().trim(),auth.getUid()+"",""+System.currentTimeMillis(),"0");
                 reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
                 reference.child(System.currentTimeMillis()+"").setValue(chat);
 
                 updateChat();
+                Uri uri = Uri.parse(url)
+                        .buildUpon()
+                        .appendPath(editText.getText().toString()).build();
+                URL newU = null;
+                try {
+                    newU = new URL(uri.toString());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
 
+                Log.i("URL",newU+"");
+                url = url + editText.getText().toString();
+                Log.i("url",url);
+                editText.setText("");
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String reply = String.valueOf(response.get("Response"));
+//                            Toast.makeText(MainActivity.this, ""+response.get("Response"), Toast.LENGTH_SHORT).show();
+                            chat chat = new chat(reply,auth.getUid(),""+System.currentTimeMillis(),"1");
+                            reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                            reference.child(System.currentTimeMillis()+"").setValue(chat);
+                            updateChat();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                requestQueue.add(jsonObjectRequest);
             }
         });
     }

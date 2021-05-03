@@ -106,7 +106,7 @@ public class LoginActivity extends AppCompatActivity {
                             assert user != null;
                             auth.updateCurrentUser(user);
 
-                            Toast.makeText(LoginActivity.this, ""+auth.getUid(), Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(LoginActivity.this, ""+auth.getUid(), Toast.LENGTH_SHORT).show();
                             GoogleSignInDB googleSignInDB = new GoogleSignInDB(account.getDisplayName(),account.getEmail());
                             reference = FirebaseDatabase.getInstance().getReference().getRoot();
                             reference.child("Users").child(Objects.requireNonNull(auth.getUid())).setValue(googleSignInDB);
