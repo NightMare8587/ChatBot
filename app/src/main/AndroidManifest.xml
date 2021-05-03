@@ -6,9 +6,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="Jethiya Bot"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@drawable/newlogo"
+        android:label="Jethiya AI"
+        android:roundIcon="@drawable/newlogo"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".LoginActivity">
