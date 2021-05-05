@@ -15,15 +15,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:layout_width="0dp"
-            android:id="@+id/sendGif"
-            android:text="GIF"
-            android:textSize="8sp"
-            android:background="@null"
-            android:textStyle="bold"
-            android:layout_weight="0.1"
-            android:layout_height="wrap_content"/>
 
         <EditText
             android:layout_width="0dp"
@@ -33,7 +24,7 @@
             android:textStyle="bold"
             android:hint="Enter Some Text"
             android:textSize="18sp"
-            android:layout_weight="0.6"
+            android:layout_weight="0.7"
             android:layout_height="wrap_content"/>
 
         <Button
@@ -48,6 +39,7 @@
         android:id="@+id/myView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
         app:layout_constraintBottom_toTopOf="@+id/myLinearLayout"
         app:layout_constraintEnd_toEndOf="parent"
