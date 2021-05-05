@@ -24,8 +24,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 
@@ -44,7 +47,9 @@ public class LoginActivity extends AppCompatActivity {
         initialise();
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if(currentUser != null){
-            startActivity(new Intent(LoginActivity.this,MainActivity.class));
+            Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+            intent.putExtra("key","0");
+            startActivity(intent);
             finish();
         }
         googleSignIn.setOnClickListener(new View.OnClickListener() {
@@ -109,9 +114,30 @@ public class LoginActivity extends AppCompatActivity {
 //                            Toast.makeText(LoginActivity.this, ""+auth.getUid(), Toast.LENGTH_SHORT).show();
                             GoogleSignInDB googleSignInDB = new GoogleSignInDB(account.getDisplayName(),account.getEmail());
                             reference = FirebaseDatabase.getInstance().getReference().getRoot();
-                            reference.child("Users").child(Objects.requireNonNull(auth.getUid())).setValue(googleSignInDB);
+                            reference.child("Users").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if(snapshot.hasChild(auth.getUid())){
+                                        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                                        intent.putExtra("key","0");
+                                        reference.child("Users").child(Objects.requireNonNull(auth.getUid())).setValue(googleSignInDB);
+                                        startActivity(new Intent(LoginActivity.this,MainActivity.class));
+                                        finish();
+                                    }else{
+                                        Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                                        intent.putExtra("key","1");
+                                        reference.child("Users").child(Objects.requireNonNull(auth.getUid())).setValue(googleSignInDB);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                }
 
-                            startActivity(new Intent(LoginActivity.this,MainActivity.class));
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                          ;
 //                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.

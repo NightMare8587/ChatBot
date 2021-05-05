@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> leftOr = new ArrayList<>();
     GoogleSignInOptions gso;
     FirebaseAuth auth;
+    String value;
     FastDialog fastDialog;
     DatabaseReference reference;
     RecyclerView recyclerView;
@@ -60,11 +61,40 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initialise();
+        value = getIntent().getStringExtra("key");
+        if(value.equalsIgnoreCase("1")){
+            RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+            url = url + "userFirstLogin";
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        String reply = String.valueOf(response.get("Response"));
+//                            Toast.makeText(MainActivity.this, ""+response.get("Response"), Toast.LENGTH_SHORT).show();
+                        chat chat = new chat(reply,auth.getUid(),""+System.currentTimeMillis(),"1");
+                        reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                        reference.child(System.currentTimeMillis()+"").setValue(chat);
+                        updateChat();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+            requestQueue.add(jsonObjectRequest);
+        }
         fastDialog = new FastDialogBuilder(MainActivity.this, Type.PROGRESS)
                 .progressText("Loading Previous Chat...")
                 .setAnimation(Animations.FADE_IN)
                 .create();
         fastDialog.show();
+
+
         linearLayoutManager = new LinearLayoutManager(MainActivity.this);
         reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -103,50 +133,104 @@ public class MainActivity extends AppCompatActivity {
                     editText.requestFocus();
                     editText.setError("Field can't be empty");
                     return;
-                }
-                auth = FirebaseAuth.getInstance();
-                RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
-                chat chat = new chat(editText.getText().toString().trim(),auth.getUid()+"",""+System.currentTimeMillis(),"0");
-                reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
-                reference.child(System.currentTimeMillis()+"").setValue(chat);
+                }else  if(
+                        editText.getText().toString().equalsIgnoreCase("\\c")
+                        || editText.getText().toString().equalsIgnoreCase("\\link")
+                        || editText.getText().toString().equalsIgnoreCase("\\drive")
 
-                updateChat();
-                Uri uri = Uri.parse(url)
-                        .buildUpon()
-                        .appendPath(editText.getText().toString()).build();
-                URL newU = null;
-                try {
-                    newU = new URL(uri.toString());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
+                ){
+                    url = "https://jethiya-ai.herokuapp.com/api";
+                    auth = FirebaseAuth.getInstance();
+                    RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                    chat chat = new chat(editText.getText().toString().trim(),auth.getUid()+"",""+System.currentTimeMillis(),"0");
+                    reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                    reference.child(System.currentTimeMillis()+"").setValue(chat);
 
-                Log.i("URL",newU+"");
-                url = url + editText.getText().toString();
-                Log.i("url",url);
-                editText.setText("");
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            String reply = String.valueOf(response.get("Response"));
+                    updateChat();
+                    Uri uri = Uri.parse(url)
+                            .buildUpon()
+                            .appendPath(editText.getText().toString()).build();
+                    URL newU = null;
+                    try {
+                        newU = new URL(uri.toString());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.i("URL",newU+"");
+                    String input = editText.getText().toString();
+                    input.replace("\\","%5");
+                    url = url + input;
+                    Log.i("url",url);
+                    editText.setText("");
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                String reply = String.valueOf(response.get("Response"));
 //                            Toast.makeText(MainActivity.this, ""+response.get("Response"), Toast.LENGTH_SHORT).show();
-                            chat chat = new chat(reply,auth.getUid(),""+System.currentTimeMillis(),"1");
-                            reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
-                            reference.child(System.currentTimeMillis()+"").setValue(chat);
-                            updateChat();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                                chat chat = new chat(reply,auth.getUid(),""+System.currentTimeMillis(),"1");
+                                reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                                reference.child(System.currentTimeMillis()+"").setValue(chat);
+                                updateChat();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
 
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    requestQueue.add(jsonObjectRequest);
+                }else {
+                    url = "https://jethiya-ai.herokuapp.com/api/";
+                    auth = FirebaseAuth.getInstance();
+                    RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+                    chat chat = new chat(editText.getText().toString().trim(), auth.getUid() + "", "" + System.currentTimeMillis(), "0");
+                    reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                    reference.child(System.currentTimeMillis() + "").setValue(chat);
+
+                    updateChat();
+                    Uri uri = Uri.parse(url)
+                            .buildUpon()
+                            .appendPath(editText.getText().toString()).build();
+                    URL newU = null;
+                    try {
+                        newU = new URL(uri.toString());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
                     }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                requestQueue.add(jsonObjectRequest);
+
+                    Log.i("URL", newU + "");
+                    url = url + editText.getText().toString();
+                    Log.i("url", url);
+                    editText.setText("");
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                String reply = String.valueOf(response.get("Response"));
+//                            Toast.makeText(MainActivity.this, ""+response.get("Response"), Toast.LENGTH_SHORT).show();
+                                chat chat = new chat(reply, auth.getUid(), "" + System.currentTimeMillis(), "1");
+                                reference = FirebaseDatabase.getInstance().getReference().getRoot().child("Chat").child(Objects.requireNonNull(auth.getUid()));
+                                reference.child(System.currentTimeMillis() + "").setValue(chat);
+                                updateChat();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    requestQueue.add(jsonObjectRequest);
+                }
             }
         });
     }
