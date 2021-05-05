@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -86,6 +87,10 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    15000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             requestQueue.add(jsonObjectRequest);
         }
         fastDialog = new FastDialogBuilder(MainActivity.this, Type.PROGRESS)
@@ -184,6 +189,10 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
+                    jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                            5000,
+                            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                     requestQueue.add(jsonObjectRequest);
                 }else {
                     url = "https://jethiya-ai.herokuapp.com/api/";
@@ -229,6 +238,10 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Failure " + error.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
+                    jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                            5000,
+                            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
                     requestQueue.add(jsonObjectRequest);
                 }
             }
